@@ -6,6 +6,7 @@ import {
   comparePasswords,
   hashPassword,
 } from 'src/module/common/utils/password.util';
+import { ResponseData } from 'src/module/common/dto';
 
 @Injectable()
 export class AuthService {
@@ -16,14 +17,26 @@ export class AuthService {
 
   async signUp(createUserDto: CreateUserDto) {
     const hashedPassword = await hashPassword(createUserDto.password);
-    const user = await this.usersService.createUser({
+    const resUser = await this.usersService.createUser({
       ...createUserDto,
       password: hashedPassword,
     });
-    return user;
+    if (resUser.status) {
+      const payload = { email: resUser?.data?.email, sub: resUser?.data?.id };
+      return {
+        message: 'Sign up was successful',
+        status: true,
+        data: {
+          accessToken: this.jwtService.sign(payload),
+          user: resUser.data,
+        },
+      };
+    } else {
+      return resUser;
+    }
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string): Promise<ResponseData> {
     const user = await this.usersService.findUserByEmail(email);
     if (!user || !(await comparePasswords(password, user.password))) {
       throw new UnauthorizedException({
@@ -34,8 +47,12 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     delete user.password;
     return {
-      access_token: this.jwtService.sign(payload),
-      user: user,
+      message: 'Login successful',
+      status: true,
+      data: {
+        accessToken: this.jwtService.sign(payload),
+        user,
+      },
     };
   }
 }
