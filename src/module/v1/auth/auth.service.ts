@@ -26,11 +26,16 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.usersService.findUserByEmail(email);
     if (!user || !(await comparePasswords(password, user.password))) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException({
+        message: 'Invalid email or password',
+        status: false,
+      });
     }
     const payload = { email: user.email, sub: user.id };
+    delete user.password;
     return {
       access_token: this.jwtService.sign(payload),
+      user: user,
     };
   }
 }

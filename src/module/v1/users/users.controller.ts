@@ -1,20 +1,27 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Request,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './users.dto';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Users')
 @Controller('v1/users')
+@UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  @ApiResponse({ status: 201, description: 'User created successfully' })
-  @ApiResponse({
-    status: 409,
-    description: 'User with this email already exists',
-  })
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
+  @ApiBearerAuth()
+  @Get('data')
+  async getPatientData(@Request() req): Promise<any> {
+    const { userId } = req.user;
+    // return await this.patientService.findOne(patientId);
+    return await this.usersService.userData(userId);
   }
 }

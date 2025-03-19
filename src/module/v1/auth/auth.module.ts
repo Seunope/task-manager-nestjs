@@ -6,6 +6,7 @@ import { UsersModule } from '../users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from 'src/module/common/prisma/prisma.service';
+import { CustomLoggerService } from 'src/module/common/custom-logger/custom-logger.service';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { PrismaService } from 'src/module/common/prisma/prisma.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, UsersService, PrismaService],
+  providers: [AuthService, UsersService, PrismaService, CustomLoggerService],
   controllers: [AuthController],
 })
 export class AuthModule {}

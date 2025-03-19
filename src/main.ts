@@ -3,26 +3,27 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { HttpExceptionFilter } from './module/common/filters/http-exception/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Global validation pipe
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // Swagger setup
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT') || 3000;
+  const apiUrl = configService.get<string>('API_URL');
+
   const config = new DocumentBuilder()
     .setTitle('Task Management API')
     .setDescription('API for managing tasks and users')
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer(apiUrl)
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-
-  // Get the ConfigService instance
-  const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT') || 3000;
 
   await app.listen(port);
 }
