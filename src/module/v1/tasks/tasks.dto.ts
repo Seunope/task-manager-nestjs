@@ -17,12 +17,12 @@ export class CreateTaskDto {
   @IsString()
   description: string;
 
-  @ApiProperty({
-    description: 'The ID of the user who owns the task',
-    example: 1,
-  })
-  @IsInt()
-  user_id: number;
+  // @ApiProperty({
+  //   description: 'The ID of the user who owns the task',
+  //   example: 1,
+  // })
+  // @IsInt()
+  // user_id: number;
 }
 
 export class UpdateTaskStatusDto {
