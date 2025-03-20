@@ -4,6 +4,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './module/common/filters/http-exception/http-exception.filter';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import * as express from 'express';
+import { Server } from 'http';
+
+const server = express();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -33,3 +38,5 @@ async function bootstrap() {
   await app.listen(port);
 }
 bootstrap();
+
+export default server;
