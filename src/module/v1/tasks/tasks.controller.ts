@@ -8,20 +8,27 @@ import {
   Patch,
   Request,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, UpdateTaskStatusDto } from './tasks.dto';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@ApiTags('Tasks')
-@Controller('v1/tasks')
+@ApiTags('Task')
+@Controller('v1/task')
 @UseGuards(JwtAuthGuard)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @Post()
+  @Post('create')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new task' })
   @ApiResponse({ status: 201, description: 'Task created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   create(@Body() createTaskDto: CreateTaskDto, @Request() req) {
@@ -29,8 +36,9 @@ export class TasksController {
     return this.tasksService.createTask(createTaskDto, userId);
   }
 
-  @Get()
+  @Get('/list')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'List all user tasks' })
   @ApiResponse({ status: 200, description: 'List of all tasks' })
   findAll(@Request() req) {
     const { userId } = req.user;
@@ -40,6 +48,7 @@ export class TasksController {
 
   @Patch(':id/status')
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update task status' })
   @ApiResponse({ status: 200, description: 'Task status updated successfully' })
   @ApiResponse({ status: 404, description: 'Task not found' })
   updateStatus(
@@ -51,7 +60,21 @@ export class TasksController {
     return this.tasksService.updateTaskStatus(+id, updateTaskStatusDto, userId);
   }
 
-  @Delete(':id')
+  @Put(':id/edit')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Edit task' })
+  @ApiResponse({ status: 200, description: 'Task status updated successfully' })
+  @ApiResponse({ status: 404, description: 'Task not found' })
+  editStatus(
+    @Param('id') id: string,
+    @Request() req,
+    @Body() dto: CreateTaskDto,
+  ) {
+    const { userId } = req.user;
+    return this.tasksService.editTask(+id, dto, userId);
+  }
+
+  @Delete(':id/delete')
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Task deleted successfully' })
   @ApiResponse({ status: 404, description: 'Task not found' })

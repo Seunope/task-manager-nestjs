@@ -5,12 +5,13 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/module/common/prisma/prisma.service';
 import { CreateTaskDto, UpdateTaskStatusDto } from './tasks.dto';
+import { ResponseData } from 'src/module/common/dto';
 
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async createTask(dto: CreateTaskDto, userId: number) {
+  async createTask(dto: CreateTaskDto, userId: number): Promise<ResponseData> {
     const task = await this.prisma.task.findFirst({
       where: { title: dto.title, user_id: userId },
     });
@@ -26,10 +27,17 @@ export class TasksService {
       ...dto,
       user_id: userId,
     };
-    return await this.prisma.task.create({ data: input });
+
+    const newTask = await this.prisma.task.create({ data: input });
+
+    return {
+      status: true,
+      data: newTask,
+      message: `Tasks created`,
+    };
   }
 
-  async listTasks(userId: number) {
+  async listTasks(userId: number): Promise<ResponseData> {
     const tasks = await this.prisma.task.findMany({
       where: { user_id: userId },
     });
@@ -48,7 +56,11 @@ export class TasksService {
     };
   }
 
-  async updateTaskStatus(id: number, dto: UpdateTaskStatusDto, userId: number) {
+  async updateTaskStatus(
+    id: number,
+    dto: UpdateTaskStatusDto,
+    userId: number,
+  ): Promise<ResponseData> {
     const task = await this.prisma.task.findFirst({
       where: { id, user_id: userId },
     });
@@ -70,7 +82,35 @@ export class TasksService {
     };
   }
 
-  async deleteTask(id: number, userId: number) {
+  async editTask(
+    id: number,
+    dto: CreateTaskDto,
+    userId: number,
+  ): Promise<ResponseData> {
+    const task = await this.prisma.task.findFirst({
+      where: { id, user_id: userId },
+    });
+    if (!task) {
+      throw new NotFoundException({
+        message: `Task with ID ${id} not found`,
+        status: false,
+      });
+    }
+
+    const updateTask = await this.prisma.task.update({
+      where: { id },
+      data: { ...dto },
+    });
+
+    // console.log('updateTask', updateTask);
+    return {
+      status: true,
+      data: updateTask,
+      message: `Task was successfully updated`,
+    };
+  }
+
+  async deleteTask(id: number, userId: number): Promise<ResponseData> {
     const task = await this.prisma.task.findFirst({
       where: { id, user_id: userId },
     });
@@ -84,7 +124,7 @@ export class TasksService {
 
     return {
       status: true,
-      data: {},
+      data: task,
       message: `Task deleted`,
     };
   }
