@@ -8,7 +8,6 @@ import { UsersModule } from './module/v1/users/users.module';
 import { AuthService } from './module/v1/auth/auth.service';
 import { AuthModule } from './module/v1/auth/auth.module';
 import { PrismaModule } from './module/common/prisma/prisma.module';
-import { CustomLoggerService } from './module/common/custom-logger/custom-logger.service';
 import { CustomLoggerModule } from './module/common/custom-logger/custom-logger.module';
 import { JwtStrategy } from './module/v1/auth/strategies/jwt.strategy';
 
